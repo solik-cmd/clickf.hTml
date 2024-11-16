@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кликер с магазином</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f8ff, #d3eaf7);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        /* Кнопка для клика */
+        #clickButton {
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #clickButton:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        #clickButton:active {
+            transform: scale(1);
+        }
+
+        #coins {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        /* Стиль магазина */
+        #shop {
+            margin-top: 40px;
+            display: none;  /* Скрываем магазин по умолчанию */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            width: 80%;
+            max-width: 500px;
+            height: 80vh;  /* Ограничиваем высоту магазина */
+            overflow-y: auto;  /* Добавляем прокрутку */
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .shop-item {
+            margin: 15px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .shop-item:hover {
+            transform: scale(1.05);
+        }
+
+        .shop-item button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .shop-item button:hover {
+            background-color: #45a049;
+        }
+
+        /* Кнопка Закрыть магазин */
+        #closeShopButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #closeShopButton:hover {
+            background-color: #e53935;
+            transform: scale(1.05);
+        }
+
+        #closeShopButton:active {
+            transform: scale(1);
+        }
+
+        /* Кнопка "О нас" */
+        #aboutButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #aboutButton:hover {
+            background-color: #1e88e5;
+            transform: scale(1.05);
+        }
+
+        #aboutButton:active {
+            transform: scale(1);
+        }
+
+        /* Блок с информацией о нас */
+        #aboutSection {
+            display: none;
+            margin-top: 30px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 500px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        #aboutSection p {
+            margin-bottom: 15px;
+        }
+
+        #aboutSection a {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        #aboutSection a:hover {
+            text-decoration: underline;
+        }
+
+        #aboutSection button {
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* Анимация для появления магазина */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        /* Эффект для кнопки, если не хватает денег */
+        .disabled-button {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .error-animation {
+            animation: shake 0.3s ease-out;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Стиль кнопки для открытия магазина */
+        #shopButton {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50px;  /* Скругленные углы для более приятного вида */
+            margin-top: 20px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);  /* Легкая тень */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        #shopButton:hover {
+            background-color: #45a049;
+            transform: scale(1.1);  /* Увеличение кнопки при наведении */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);  /* Тень становится сильнее */
+        }
+
+        #shopButton:active {
+            transform: scale(1);  /* Убираем увеличение при клике */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);  /* Восстанавливаем обычную тень */
+        }
+
+        #shopButton:focus {
+            outline: none;  /* Убираем стандартное выделение при фокусе */
+        }
+    </style>
+</head>
+<body>
+
+    <div>
+        <h1>Кликер с магазином</h1>
+        
+        <button id="clickButton">Кликни меня!</button>
+        <div id="coins">Койны: 0</div>
+        
+        <!-- Кнопка для открытия магазина -->
+        <button id="shopButton">Открыть магазин</button>
+
+        <!-- Кнопка "О нас" -->
+        <button id="aboutButton">О нас</button>
+
+        <!-- Затемнение фона для открытия магазина -->
+        <div id="shopOverlay"></div>
+
+        <!-- Магазин -->
+        <div id="shop">
+            <h2>Магазин</h2>
+            <div class="shop-item">
+                <h3>Автокликер</h3>
+                <p>Автоматически кликает раз в секунду.</p>
+                <button id="buyAutoClicker">Купить за <span id="autoClickerPrice">10</span> койнов</button>
+            </div>
+            <div class="shop-item">
+                <h3>Множитель кликов</h3>
+                <p>Увеличивает количество койнов с каждого клика в 2 раза.</p>
+                <button id="buyMultiplier">Купить за <span id="multiplierPrice">20</span> койнов</button>
+            </div>
+            <div class="shop-item">
+                <h3>Фабрика</h3>
+                <p>Приносит 200 койнов каждую минуту.</p>
+                <button id="buyFactory">Купить за <span id="factoryPriceSpan">1000</span> койнов</button>
+            </div>
+            <button id="closeShopButton">Закрыть магазин</button>
+        </div>
+
+        <!-- Блок с информацией о нас -->
+        <div id="aboutSection">
+            <h3>Привет! Я создатель игры.</h3>
+            <p>Я пока что делаю игру сам. Заходи на мой YouTube канал:</p>
+            <p><a href="https://www.youtube.com/channel/UCHyPru0JNKpRcVaCwzJQIeQ" target="_blank">Мой YouTube канал</a>.</p>
+            <button id="closeAboutButton">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+        let coins = 0;
+        let clickValue = 1;  // Сколько койнов даёт один клик
+        let autoClickerEnabled = false;  // Флаг для автокликера
+        let multiplierEnabled = false;  // Флаг для множителя
+        let factoryEnabled = false;  // Флаг для фабрики
+        let autoClickerPrice = 10;  // Цена автокликера
+        let multiplierPrice = 20;  // Цена множителя
+        let factoryPrice = 1000;  // Цена фабрики
+
+        // Функция для обновления отображения койнов
+        function updateCoins() {
+            document.getElementById('coins').textContent = `Койны: ${coins}`;
+        }
+
+        // Функция для клика (дает койны в зависимости от множителя)
+        document.getElementById('clickButton').addEventListener('click', function() {
+            coins += multiplierEnabled ? clickValue * 2 : clickValue;
+            updateCoins();
+        });
+
+        // Функция для покупки автокликера
+        document.getElementById('buyAutoClicker').addEventListener('click', function() {
+            if (coins >= autoClickerPrice) {
+                coins -= autoClickerPrice;
+                autoClickerEnabled = true;
+                autoClickerPrice += 10; // Увеличиваем цену на 10 после покупки
+                document.getElementById('autoClickerPrice').textContent = autoClickerPrice;
+                updateCoins();
+                startAutoClicker();
+            } else {
+                disableButtonWithEffect(this);
+            }
+        });
+
+        // Функция для покупки множителя кликов
+        document.getElementById('buyMultiplier').addEventListener('click', function() {
+            if (coins >= multiplierPrice) {
+                coins -= multiplierPrice;
+                multiplierEnabled = true;
+                multiplierPrice += 10; // Увеличиваем цену на 10 после покупки
+                document.getElementById('multiplierPrice').textContent = multiplierPrice;
+                updateCoins();
+            } else {
+                disableButtonWithEffect(this);
+            }
+        });
+
+        // Функция для покупки фабрики
+        document.getElementById('buyFactory').addEventListener('click', function() {
+            if (coins >= factoryPrice) {
+                coins -= factoryPrice;
+                factoryEnabled = true;
+                factoryPrice = 2000; // Цена фабрики увеличивается до 2000
+                document.getElementById('factoryPrice').textContent = factoryPrice;
+                document.getElementById('factoryPriceSpan').textContent = factoryPrice;
+                updateCoins();
+                startFactory();
+            } else {
+                disableButtonWithEffect(this);
+            }
+        });
+
+        // Функция для автокликера
+        function startAutoClicker() {
+            if (autoClickerEnabled) {
+                setInterval(() => {
+                    coins += clickValue;
+                    updateCoins();
+                }, 1000);  // Кликает раз в секунду
+            }
+        }
+
+        // Функция для фабрики
+        function startFactory() {
+            if (factoryEnabled) {
+                setInterval(() => {
+                    coins += 200;
+                    updateCoins();
+                }, 60000);  // Фабрика добавляет 200 койнов каждую минуту
+            }
+        }
+
+        // Функция для открытия магазина
+        document.getElementById('shopButton').addEventListener('click', function() {
+            document.getElementById('shop').style.display = 'block';
+            document.getElementById('shopOverlay').style.display = 'block';
+        });
+
+        // Функция для закрытия магазина
+        document.getElementById('closeShopButton').addEventListener('click', function() {
+            document.getElementById('shop').style.display = 'none';
+            document.getElementById('shopOverlay').style.display = 'none';
+        });
+
+        // Открытие блока "О нас"
+        document.getElementById('aboutButton').addEventListener('click', function() {
+            document.getElementById('aboutSection').style.display = 'block';
+        });
+
+        // Закрытие блока "О нас"
+        document.getElementById('closeAboutButton').addEventListener('click', function() {
+            document.getElementById('aboutSection').style.display = 'none';
+        });
+
+        // Функция подсветки кнопки, если недостаточно средств
+        function disableButtonWithEffect(button) {
+            button.classList.add('disabled-button');
+            button.classList.add('error-animation');
+            setTimeout(() => {
+                button.classList.remove('error-animation');
+            }, 300); // Убираем анимацию после 300ms
+        }
+    </script>
+</body>
+</html>
